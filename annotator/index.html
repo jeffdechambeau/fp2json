@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simple Annotation Tool</title>
+    <style>
+      #canvas {
+        border: 1px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="600" height="400"></canvas>
+    <button id="exportBtn">Export to JSON</button>
+    <pre id="output"></pre>
+
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const rects = [];
+      let startX,
+        startY,
+        isDrawing = false;
+
+      canvas.addEventListener('mousedown', e => {
+        startX = e.offsetX;
+        startY = e.offsetY;
+        isDrawing = true;
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        if (isDrawing === true) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          rects.forEach(rect => drawRect(rect)); // Draw all rectangles that were previously drawn
+          drawRect({ x: startX, y: startY, width: e.offsetX - startX, height: e.offsetY - startY });
+        }
+      });
+
+      canvas.addEventListener('mouseup', e => {
+        if (isDrawing === true) {
+          rects.push({ x: startX, y: startY, width: e.offsetX - startX, height: e.offsetY - startY });
+          startX = undefined;
+          startY = undefined;
+          isDrawing = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          rects.forEach(rect => drawRect(rect)); // Redraw all rectangles to include the one that was just created
+        }
+      });
+
+      function drawRect(rect) {
+        ctx.beginPath();
+        ctx.rect(rect.x, rect.y, rect.width, rect.height);
+        ctx.stroke();
+      }
+
+      function sendJSONToPython(jsonData) {
+        google.colab.kernel.invokeFunction('namespace.get_json_data', [jsonData], {});
+      }
+
+      document.getElementById('exportBtn').onclick = function () {
+        const json = JSON.stringify(rects, null, 2);
+        sendJSONToPython(json);
+        document.getElementById('output').textContent = json;
+        // Here we display the JSON in a <pre> tag, but you might want to handle it differently
+      };
+
+      canvas.addEventListener('mousedown', setStart);
+    </script>
+  </body>
+</html>
