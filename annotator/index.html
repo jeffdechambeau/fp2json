@@ -2,69 +2,136 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Simple Annotation Tool</title>
+    <title>Floor Plan Annotation Tool</title>
     <style>
       #canvas {
-        border: 1px solid #000;
+        border: 1px solid black;
+      }
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
-    <canvas id="canvas" width="600" height="400"></canvas>
-    <button id="exportBtn">Export to JSON</button>
-    <pre id="output"></pre>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div>
+      <label>Label: <input type="text" id="label" disabled /></label>
+      <button id="updateButton" class="hidden">Update</button>
+    </div>
 
     <script>
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
-      const rects = [];
-      let startX,
-        startY,
-        isDrawing = false;
+      const labelInput = document.getElementById('label');
+      const updateButton = document.getElementById('updateButton');
 
-      canvas.addEventListener('mousedown', e => {
-        startX = e.offsetX;
-        startY = e.offsetY;
-        isDrawing = true;
-      });
+      let rectangles = [];
+      let selectedRectangleIndex = -1;
+      let isDragging = false;
+      let dragOffsetX, dragOffsetY;
 
-      canvas.addEventListener('mousemove', e => {
-        if (isDrawing === true) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          rects.forEach(rect => drawRect(rect)); // Draw all rectangles that were previously drawn
-          drawRect({ x: startX, y: startY, width: e.offsetX - startX, height: e.offsetY - startY });
+      canvas.addEventListener('click', function (event) {
+        const x = event.pageX - canvas.offsetLeft;
+        const y = event.pageY - canvas.offsetTop;
+
+        const clickedIndex = rectangles.findIndex(
+          rect => x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height
+        );
+
+        if (clickedIndex !== -1) {
+          selectRectangle(clickedIndex);
         }
       });
 
-      canvas.addEventListener('mouseup', e => {
-        if (isDrawing === true) {
-          rects.push({ x: startX, y: startY, width: e.offsetX - startX, height: e.offsetY - startY });
-          startX = undefined;
-          startY = undefined;
-          isDrawing = false;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          rects.forEach(rect => drawRect(rect)); // Redraw all rectangles to include the one that was just created
+      function isCursorNearEdge(x, y, rect) {
+        const edgeThreshold = 10; // pixels
+        return (
+          Math.abs(rect.x - x) < edgeThreshold ||
+          Math.abs(rect.y - y) < edgeThreshold ||
+          Math.abs(rect.x + rect.width - x) < edgeThreshold ||
+          Math.abs(rect.y + rect.height - y) < edgeThreshold
+        );
+      }
+
+      function handleMouseMove(event) {
+        const x = event.pageX - canvas.offsetLeft;
+        const y = event.pageY - canvas.offsetTop;
+        const hoverIndex = rectangles.findIndex(rect => isCursorNearEdge(x, y, rect));
+
+        if (hoverIndex !== -1) {
+          canvas.style.cursor = 'pointer';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+
+        if (isDragging) {
+          const rect = rectangles[selectedRectangleIndex];
+          rect.x = x - dragOffsetX;
+          rect.y = y - dragOffsetY;
+          drawRectangles();
+        }
+      }
+
+      function handleMouseDown(event) {
+        const x = event.pageX - canvas.offsetLeft;
+        const y = event.pageY - canvas.offsetTop;
+        const dragIndex = rectangles.findIndex(rect => isCursorNearEdge(x, y, rect));
+
+        if (dragIndex !== -1) {
+          isDragging = true;
+          selectedRectangleIndex = dragIndex;
+          dragOffsetX = x - rectangles[dragIndex].x;
+          dragOffsetY = y - rectangles[dragIndex].y;
+          canvas.addEventListener('mousemove', handleMouseMove);
+          canvas.addEventListener('mouseup', handleMouseUp);
+        }
+      }
+
+      function handleMouseUp() {
+        isDragging = false;
+        canvas.removeEventListener('mousemove', handleMouseMove);
+        canvas.removeEventListener('mouseup', handleMouseUp);
+      }
+
+      canvas.addEventListener('mousedown', handleMouseDown);
+
+      function selectRectangle(index) {
+        selectedRectangleIndex = index;
+        labelInput.value = rectangles[index].label;
+        labelInput.disabled = false;
+        updateButton.classList.remove('hidden');
+        drawRectangles();
+      }
+
+      function drawRectangles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        rectangles.forEach((rect, index) => {
+          ctx.beginPath();
+          ctx.rect(rect.x, rect.y, rect.width, rect.height);
+          ctx.fillStyle = isCursorNearEdge(rect.x, rect.y, rect) ? 'green' : rect.color;
+          ctx.fill();
+          ctx.lineWidth = selectedRectangleIndex === index ? 2 : 1;
+          ctx.strokeStyle = selectedRectangleIndex === index ? 'red' : 'black';
+          ctx.stroke();
+        });
+      }
+
+      updateButton.addEventListener('click', function () {
+        if (selectedRectangleIndex !== -1) {
+          rectangles[selectedRectangleIndex].label = labelInput.value;
+          labelInput.disabled = true;
+          updateButton.classList.add('hidden');
+          drawRectangles();
         }
       });
 
-      function drawRect(rect) {
-        ctx.beginPath();
-        ctx.rect(rect.x, rect.y, rect.width, rect.height);
-        ctx.stroke();
-      }
+      // Initial rectangles setup
+      rectangles = [
+        { x: 10, y: 20, width: 100, height: 50, color: 'blue', label: 'Living Room' },
+        // Add more rectangles with metadata as needed
+      ];
 
-      function sendJSONToPython(jsonData) {
-        google.colab.kernel.invokeFunction('namespace.get_json_data', [jsonData], {});
-      }
-
-      document.getElementById('exportBtn').onclick = function () {
-        const json = JSON.stringify(rects, null, 2);
-        sendJSONToPython(json);
-        document.getElementById('output').textContent = json;
-        // Here we display the JSON in a <pre> tag, but you might want to handle it differently
-      };
-
-      canvas.addEventListener('mousedown', setStart);
+      drawRectangles();
     </script>
   </body>
 </html>
