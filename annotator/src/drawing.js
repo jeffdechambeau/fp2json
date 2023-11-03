@@ -1,4 +1,4 @@
-export function drawRectangles(ctx, rectangles) {
+function drawRectangles(ctx, rectangles) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   rectangles.forEach(rect => {
     ctx.beginPath();

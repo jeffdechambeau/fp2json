@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const jsDirectory = './src';
-
-const htmlTemplatePath = './src/template.html';
-const htmlOutputPath = './dist/index.html';
+const jsDirectory = path.resolve('./src');
+const htmlTemplatePath = path.resolve('./src/template.html');
+const distDirectory = path.resolve('./dist');
+const htmlOutputPath = path.join(distDirectory, 'index.html');
 
 const injectionPlaceholder = '<!-- INJECT_SCRIPTS -->';
 
@@ -24,7 +24,6 @@ fs.readdir(jsDirectory, (err, files) => {
     .filter(file => file.endsWith('.js'))
     .map(file => fs.readFileSync(path.join(jsDirectory, file), 'utf8'))
     .join('\n')}</script>`;
-  console.log({ scriptTags });
 
   htmlContent = htmlContent.replace(injectionPlaceholder, scriptTags);
 

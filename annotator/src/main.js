@@ -1,6 +1,3 @@
-import { Rectangle, findHoveredRectangle, cursorOnEdge, resizeRectangle } from './rectangle.js';
-import { drawRectangles } from './drawing.js';
-
 const canvas = document.getElementById('canvas'); // Replace 'canvas-id' with your actual canvas id
 const ctx = canvas.getContext('2d');
 

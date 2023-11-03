@@ -1,5 +1,4 @@
-// rectangle.js
-export class Rectangle {
+class Rectangle {
   constructor(x, y, width, height, strokeColor) {
     this.x = x;
     this.y = y;
@@ -11,7 +10,7 @@ export class Rectangle {
   }
 }
 
-export function findHoveredRectangle(rectangles, x, y) {
+function findHoveredRectangle(rectangles, x, y) {
   for (let i = rectangles.length - 1; i >= 0; i--) {
     const rect = rectangles[i];
     if (x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height) {
@@ -21,7 +20,7 @@ export function findHoveredRectangle(rectangles, x, y) {
   return { rect: null, index: -1 };
 }
 
-export function cursorOnEdge(x, y, rect, edgeProximity) {
+function cursorOnEdge(x, y, rect, edgeProximity) {
   if (!rect) return { isNearEdge: false, edge: null };
   if (x >= rect.x - edgeProximity && x <= rect.x + edgeProximity) return { isNearEdge: true, edge: 'left' };
   if (x >= rect.x + rect.width - edgeProximity && x <= rect.x + rect.width + edgeProximity)
@@ -33,7 +32,7 @@ export function cursorOnEdge(x, y, rect, edgeProximity) {
   return { isNearEdge: false, edge: null };
 }
 
-export function resizeRectangle(rect, x, y, edge) {
+function resizeRectangle(rect, x, y, edge) {
   switch (edge) {
     case 'left':
       rect.width += rect.x - x;
