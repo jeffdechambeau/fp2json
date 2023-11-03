@@ -4,7 +4,3 @@ function sendJSONToPython(jsonData) {
 function sendToPython(name, data) {
   google.colab.kernel.invokeFunction(`namespace.${name}`, [data], {});
 }
-
-document.getElementById('exportBtn').onclick = function () {
-  sendJSONToPython(json);
-};

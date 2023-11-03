@@ -68,4 +68,8 @@ canvas.addEventListener('mousemove', handleMouseMove);
 canvas.addEventListener('mousedown', handleMouseDown);
 window.addEventListener('mouseup', handleMouseUp);
 
+document.getElementById('export-json').onclick = function () {
+  sendJSONToPython(JSON.stringify(rectangles, null, 2));
+};
+
 drawRectangles(ctx, rectangles);
