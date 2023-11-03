@@ -1,7 +1,6 @@
-// main.js
-import { Rectangle, findHoveredRectangle, cursorOnEdge, resizeRectangle } from './src/rectangle.js';
-import { drawRectangles } from './src/drawing.js';
-// Add canvas and context definitions
+import { Rectangle, findHoveredRectangle, cursorOnEdge, resizeRectangle } from './rectangle.js';
+import { drawRectangles } from './drawing.js';
+
 const canvas = document.getElementById('canvas'); // Replace 'canvas-id' with your actual canvas id
 const ctx = canvas.getContext('2d');
 
@@ -41,6 +40,7 @@ function handleMouseMove(event) {
 
   drawRectangles(ctx, rectangles);
 }
+
 function handleMouseDown(event) {
   const x = event.pageX - canvas.offsetLeft;
   const y = event.pageY - canvas.offsetTop;
@@ -67,10 +67,8 @@ function handleMouseUp() {
   drawRectangles(ctx, rectangles); // Redraw to clear any intermediate states
 }
 
-// Add event listeners
 canvas.addEventListener('mousemove', handleMouseMove);
 canvas.addEventListener('mousedown', handleMouseDown);
 window.addEventListener('mouseup', handleMouseUp);
 
-// Initial drawing of the canvas
 drawRectangles(ctx, rectangles);
