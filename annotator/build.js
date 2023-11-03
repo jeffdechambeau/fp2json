@@ -10,8 +10,8 @@ const injectionPlaceholder = '<!-- INJECT_SCRIPTS -->';
 
 let htmlContent = fs.readFileSync(htmlTemplatePath, 'utf8');
 
-if (!fs.existsSync(htmlOutputPath)) {
-  fs.mkdirSync(htmlOutputPath, { recursive: true });
+if (!fs.existsSync(distDirectory)) {
+  fs.mkdirSync(distDirectory);
 }
 
 fs.readdir(jsDirectory, (err, files) => {
